@@ -2,7 +2,7 @@
 
 > Production-grade TypeScript SDK for non-custodial crypto donations
 
-[![npm version](https://img.shields.io/npm/v/givebit-sdk.svg)](https://www.npmjs.com/package/@givebit/sdk)
+[![npm version](https://img.shields.io/npm/v/@givebit/sdk.svg)](https://www.npmjs.com/package/@givebit/sdk)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-blue)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-brightgreen)](https://nodejs.org/)
