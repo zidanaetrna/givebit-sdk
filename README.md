@@ -4,7 +4,7 @@
 
 [![npm version](https://img.shields.io/npm/v/givebit-sdk.svg)](https://www.npmjs.com/package/givebit-sdk)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-blue)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-brightgreen)](https://nodejs.org/)
 
 **GiveBit** is an event-driven SDK for integrating non-custodial crypto donations into any web application. Funds go directly from donors to creators—no intermediary wallet, no custody risk.
@@ -593,12 +593,12 @@ Contributions are welcome! Please:
 
 ## License
 
-MIT License - see [LICENSE](License) file for details
+Apache License 2.0 - see [LICENSE](../LICENSE) file for details
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/zidanmutaqin/givebit-sdk/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/zidanmutaqin/givebit-sdk/discussions)
+- **Issues**: [GitHub Issues](https://github.com/zidanaetrna/givebit-sdk/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/zidanaetrna/givebit-sdk/discussions)
 - **Email**: tumbaldiscord292@gmail.com
 
 ## Roadmap
