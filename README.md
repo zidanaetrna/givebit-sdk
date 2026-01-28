@@ -1,3 +1,5 @@
+<div align="center">
+
 # GiveBit SDK
 
 > Production-grade TypeScript SDK for non-custodial crypto donations
@@ -7,7 +9,9 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-brightgreen)](https://nodejs.org/)
 
-**GiveBit** is an event-driven SDK for integrating non-custodial crypto donations into any web application. Funds go directly from donors to creators—no intermediary wallet, no custody risk.
+</div>
+
+**GiveBit** is an event-driven SDK for integrating non-custodial crypto donations into any web application. Funds go directly from donors to creators; no intermediary wallet, no custody risk.
 
 ## Features
 
