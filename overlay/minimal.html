@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>GiveBit - Minimal Overlay</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      font-family: 'Arial', sans-serif;
+      background: transparent;
+    }
+
+    .donation-alert {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: rgba(0, 0, 0, 0.85);
+      padding: 40px 60px;
+      border-radius: 12px;
+      text-align: center;
+      border: 3px solid #ffd700;
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.5);
+      animation: popIn 0.3s ease-out 0.1s forwards, popOut 0.3s ease-in 4.7s forwards;
+      display: none;
+    }
+
+    .donation-alert.show {
+      display: block;
+    }
+
+    @keyframes popIn {
+      to {
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    @keyframes popOut {
+      to {
+        transform: translate(-50%, -50%) scale(0);
+      }
+    }
+
+    .donation-amount {
+      color: #ffd700;
+      font-size: 72px;
+      font-weight: 900;
+      margin: 20px 0;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    }
+
+    .donation-donor {
+      color: white;
+      font-size: 28px;
+      margin: 10px 0;
+    }
+
+    .donation-memo {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 20px;
+      max-width: 600px;
+      margin: 20px auto 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="donation-alert" id="donationAlert">
+    <div class="donation-amount" id="amount"></div>
+    <div class="donation-donor" id="donor"></div>
+    <div class="donation-memo" id="memo"></div>
+  </div>
+
+  <script type="module">
+    const params = new URLSearchParams(window.location.search);
+    const projectId = params.get('projectId');
+    const apiKey = params.get('apiKey');
+    const mode = params.get('mode') || 'testnet';
+
+    if (!projectId || !apiKey) {
+      throw new Error('Missing required parameters: projectId and apiKey');
+    }
+
+    import('https://unpkg.com/@givebit/sdk@latest/dist/index.js').then(({ GiveBit }) => {
+      const givebit = GiveBit.init({ projectId, apiKey, mode });
+      
+      givebit.connect();
+
+      givebit.on('donation_finalized', (event) => {
+        showDonation(event.session);
+      });
+    });
+
+    function showDonation(donation) {
+      const alert = document.getElementById('donationAlert');
+      const amount = parseFloat(donation.amount) || 0;
+      const donor = donation.donor_wallet 
+        ? `${donation.donor_wallet.slice(0, 6)}...${donation.donor_wallet.slice(-4)}`
+        : 'Anonymous';
+      const memo = donation.memo || donation.metadata?.memo || '';
+
+      document.getElementById('amount').textContent = amount.toFixed(4) + ' ETH';
+      document.getElementById('donor').textContent = 'From: ' + donor;
+      document.getElementById('memo').textContent = memo;
+
+      alert.classList.add('show');
+      
+      setTimeout(() => {
+        alert.classList.remove('show');
+      }, 5000);
+    }
+  </script>
+</body>
+</html>

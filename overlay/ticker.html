@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>GiveBit - Donation Ticker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: transparent;
+    }
+
+    .ticker-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(90deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.9) 50%, rgba(0, 0, 0, 0.85) 100%);
+      border-top: 2px solid #ffd700;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .ticker-label {
+      padding: 0 30px;
+      background: #ffd700;
+      color: black;
+      font-weight: 700;
+      font-size: 18px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .ticker-content {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      animation: scroll 30s linear infinite;
+      padding: 0 30px;
+    }
+
+    @keyframes scroll {
+      0% {
+        transform: translateX(100%);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+
+    .ticker-item {
+      color: white;
+      font-size: 16px;
+      margin-right: 60px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .ticker-amount {
+      color: #ffd700;
+      font-weight: 700;
+      margin: 0 8px;
+    }
+
+    .ticker-donor {
+      color: rgba(255, 255, 255, 0.8);
+    }
+  </style>
+</head>
+<body>
+  <div class="ticker-container">
+    <div class="ticker-label">💝 RECENT DONATIONS</div>
+    <div class="ticker-content" id="tickerContent">
+      <span class="ticker-item">Waiting for donations...</span>
+    </div>
+  </div>
+
+  <script type="module">
+    const params = new URLSearchParams(window.location.search);
+    const projectId = params.get('projectId');
+    const apiKey = params.get('apiKey');
+    const mode = params.get('mode') || 'testnet';
+    const limit = parseInt(params.get('limit')) || 20;
+
+    if (!projectId || !apiKey) {
+      throw new Error('Missing required parameters: projectId and apiKey');
+    }
+
+    let donations = [];
+
+    import('https://unpkg.com/@givebit/sdk@latest/dist/index.js').then(async ({ GiveBit }) => {
+      const givebit = GiveBit.init({ projectId, apiKey, mode });
+      
+      await givebit.connect();
+
+      // Load initial donation history
+      const history = await givebit.getDonationHistory(limit);
+      donations = history.filter(d => d.status === 'finalized');
+      updateTicker();
+
+      // Listen for new donations
+      givebit.on('donation_finalized', (event) => {
+        donations.unshift(event.session);
+        if (donations.length > limit) {
+          donations = donations.slice(0, limit);
+        }
+        updateTicker();
+      });
+    });
+
+    function updateTicker() {
+      const content = document.getElementById('tickerContent');
+      
+      if (donations.length === 0) {
+        content.innerHTML = '<span class="ticker-item">Waiting for donations...</span>';
+        return;
+      }
+
+      const html = donations.map(d => {
+        const amount = parseFloat(d.amount) || 0;
+        const donor = d.donor_wallet 
+          ? `${d.donor_wallet.slice(0, 6)}...${d.donor_wallet.slice(-4)}`
+          : 'Anonymous';
+        
+        return `
+          <span class="ticker-item">
+            <span class="ticker-donor">${donor}</span>
+            <span class="ticker-amount">${amount.toFixed(4)} ETH</span>
+            ${d.memo ? `<span class="ticker-memo">"${d.memo}"</span>` : ''}
+          </span>
+        `;
+      }).join('');
+
+      content.innerHTML = html;
+    }
+  </script>
+</body>
+</html>

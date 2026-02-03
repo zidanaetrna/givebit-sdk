@@ -744,7 +744,7 @@ Apache License 2.0 - see [LICENSE](https://github.com/zidanaetrna/givebit-sdk/bl
 
 - **Issues**: [GitHub Issues](https://github.com/zidanaetrna/givebit-sdk/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/zidanaetrna/givebit-sdk/discussions)
-- **Email**: tumbaldiscord292@gmail.com
+- **Email**: me@zidanmutaqin.dev
 
 ## Roadmap
 
