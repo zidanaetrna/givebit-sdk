@@ -11,7 +11,7 @@ import {
   DonationEvent,
   EventCallback,
 } from "./types";
-import { getConfig, RECONNECT_ATTEMPTS, RECONNECT_DELAY } from "./config";
+import { getConfig, RECONNECT_ATTEMPTS, RECONNECT_DELAY, SDK_VERSION } from "./config";
 
 export class GiveBit {
   private static instance: GiveBit | null = null;

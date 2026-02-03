@@ -65,6 +65,23 @@ npm link @givebit/sdk
 
 ## Quick Start
 
+### 0. Generate API Key
+
+First, generate your API key and project ID using the setup endpoint:
+
+```bash
+curl -X POST https://testnet.zidanmutaqin.dev/api/setup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "projectName": "YourStreamName",
+    "creatorWallet": "0xYourWalletAddress"
+  }'
+```
+
+This will return your `projectId` and `apiKey`. **Save these securely** - you'll need them to initialize the SDK.
+
+For mainnet, use `https://mainnet.zidanmutaqin.dev/api/setup`.
+
 ### 1. Initialize GiveBit
 
 ```typescript
@@ -126,7 +143,9 @@ console.log('Status:', session.status);
 
 ### 4. React Example
 
-```typescript@givebit/sdk';
+```typescript
+import { useEffect, useState } from 'react';
+import { GiveBit } from '@givebit/sdk';
 
 export function DonationWidget() {
   const [donations, setDonations] = useState([]);
@@ -157,8 +176,6 @@ export function DonationWidget() {
       {donations.map((d) => (
         <div key={d.id} className="donation-item">
           <p>{d.amount} ETH from {d.donor_wallet?.slice(0, 6)}...</p>
-          <p>{d.metadata?y={d.id} className="donation-item">
-          <p>{d.amount} ETH from {d.donorWallet?.slice(0, 6)}...</p>
           <p>{d.memo}</p>
         </div>
       ))}
@@ -180,10 +197,10 @@ Initialize the SDK singleton. Call once per application.
 ```typescript
 const givebit = GiveBit.init({
   projectId: 'proj_abc123',
-  apiKey: 'gb_test_...', // Get from your backapi/ws', // Optional
-  apiEndpoint: 'https://testnet.zidanmutaqin.dev/api
-  wsEndpoint: 'wss://testnet.zidanmutaqin.dev/ws', // Optional
-  apiEndpoint: 'https://testnet.zidanmutaqin.dev', // Optional
+  apiKey: 'gb_test_...', // Get from your backend
+  mode: 'testnet', // 'testnet' | 'mainnet'
+  wsEndpoint: 'wss://testnet.zidanmutaqin.dev/api/ws', // Optional
+  apiEndpoint: 'https://testnet.zidanmutaqin.dev/api', // Optional
   reconnectAttempts: 5, // Default
   reconnectDelay: 3000, // ms, Default
 });
@@ -227,9 +244,7 @@ const session = await givebit.createDonationSession({
   },
 });
 
-// Returns: { id, project_id, creator_w
-
-// Returns: { id, projectId, creatorWallet, status, amount, ... }
+// Returns: { id, project_id, creator_wallet, status, amount, ... }
 ```
 
 ##### `getDonationSession(sessionId): Promise<DonationSession>`
@@ -248,7 +263,7 @@ Get recent donations (default: last 50).
 ```typescript
 const recent = await givebit.getDonationHistory(100);
 recent.forEach((d) => {
-  console.log(`${d.amount} ETH from ${d.donorWallet} at ${d.createdAt}`);
+  console.log(`${d.amount} ETH from ${d.donor_wallet} at ${d.created_at}`);
 });
 ```
 
@@ -313,7 +328,12 @@ givebit.disconnect();
 
 ```typescript
 interface GiveBitConfig {
-  projectId: string; // Default: 5
+  projectId: string;
+  apiKey: string;
+  mode: 'testnet' | 'mainnet';
+  wsEndpoint?: string; // Custom WebSocket URL
+  apiEndpoint?: string; // Custom API URL
+  reconnectAttempts?: number; // Default: 5
   reconnectDelay?: number; // Default: 3000ms
 }
 
@@ -344,12 +364,7 @@ type EventType =
 
 interface DonationEvent {
   type: EventType;
-  session?tion_finalized' 
-  | 'donation_failed';
-
-interface DonationEvent {
-  type: EventType;
-  session: DonationSession;
+  session?: DonationSession;
   timestamp: number;
   error?: string;
 }
@@ -376,16 +391,16 @@ VITE_GIVEBIT_MODE=mainnet
 ```
 
 ### Custom Endpoints
-api/ws',
-  apiEndpoint: 'https://your-domain.com/api
+
+If hosting GiveBit backend yourself:
 
 ```typescript
 GiveBit.init({
   projectId: 'proj_abc',
   apiKey: 'gb_test_...',
   mode: 'testnet',
-  wsEndpoint: 'wss://your-domain.com/ws',
-  apiEndpoint: 'https://your-domain.com',
+  wsEndpoint: 'wss://your-domain.com/api/ws',
+  apiEndpoint: 'https://your-domain.com/api',
 });
 ```
 
@@ -485,16 +500,16 @@ givebit.on('donation_finalized', handler); // Instant
 // Automatically used if WebSocket unavailable
 ```
 
-### Leaderboard_wallet]) byDonor[d.donor_wallet] = 0;
-    byDonor[d.donor_w
+### Leaderboard
+
 ```typescript
 async function updateLeaderboard() {
   const donations = await givebit.getDonationHistory(1000);
   
   const byDonor = {};
   donations.forEach((d) => {
-    if (!byDonor[d.donorWallet]) byDonor[d.donorWallet] = 0;
-    byDonor[d.donorWallet] += parseFloat(d.amount);
+    if (!byDonor[d.donor_wallet]) byDonor[d.donor_wallet] = 0;
+    byDonor[d.donor_wallet] += parseFloat(d.amount);
   });
   
   const leaderboard = Object.entries(byDonor)
@@ -554,7 +569,7 @@ givebit.on('connection_lost', () => {
 
 2. Verify creator wallet is correct:
    ```typescript
-   console.log(session.creatorWallet);
+   console.log(session.creator_wallet);
    ```
 
 3. Check session status:
