@@ -485,43 +485,6 @@ givebit.on('donation_finalized', handler); // Instant
 // Automatically used if WebSocket unavailable
 ```
 
-## Testing
-
-### Local Testing
-
-1. Start the backend:
-```bash
-cd backend
-go run cmd/main.go
-```
-
-2. Start the indexer:
-```bash
-cd indexer
-cargo run --release
-```/api',
-  wsEndpoint: 'ws://localhost:8080/api
-3. Test in your app:
-```typescript
-const givebit = GiveBit.init({
-  projectId: 'test-project',
-  apiKey: 'gb_test_...',
-  mode: 'testnet',
-  apiEndpoint: 'http://localhost:8080',
-  wsEndpoint: 'ws://localhost:8080/ws',
-});
-
-await givebit.connect();
-```
-
-### Testnet (Holesky)
-
-Free testnet tokens:
-- [Holesky Faucet](https://www.alchemy.com/faucets/ethereum-sepolia)
-- [Infura Faucet](https://www.infura.io/faucet/sepolia)
-
-## Examples
-
 ### Leaderboard_wallet]) byDonor[d.donor_wallet] = 0;
     byDonor[d.donor_w
 ```typescript
@@ -630,7 +593,7 @@ Contributions are welcome! Please:
 
 ## License
 
-Apache License 2.0 - see [LICENSE](../LICENSE) file for details
+Apache License 2.0 - see [LICENSE](https://github.com/zidanaetrna/givebit-sdk/blob/main/LICENSE) file for details
 
 ## Support
 
