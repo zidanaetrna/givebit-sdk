@@ -1,0 +1,53 @@
+{
+  "name": "@givebit/sdk",
+  "version": "1.0.5",
+  "description": "Production-grade SDK for non-custodial crypto donations",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "homepage": "https://github.com/zidanaetrna/givebit-sdk",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zidanaetrna/givebit-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zidanaetrna/givebit-sdk/issues"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "crypto",
+    "donations",
+    "ethereum",
+    "web3",
+    "non-custodial",
+    "sdk",
+    "blockchain",
+    "fundraising"
+  ],
+  "author": "Zidan Mutaqin",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.5.7",
+    "typescript": "^5.3.3",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.8"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+
+  "files":[
+    "src",
+    "README.md",
+    "LICENSE",
+    "tsconfig.json"
+  ]
+}
