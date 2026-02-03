@@ -27,10 +27,35 @@
 
 ## Installation
 
+### From npm
+
 ```bash
-npm install givebit-sdk
+npm install @givebit/sdk
 # or
-yarn add givebit-sdk
+yarn add @givebit/sdk
+```
+
+### From Source
+
+To build and install from source:
+
+```bash
+git clone https://github.com/zidanaetrna/givebit-sdk.git
+cd givebit-sdk
+npm install
+npm run build
+```
+
+After building, you can link it locally:
+
+```bash
+npm link
+```
+
+Then in your project:
+
+```bash
+npm link @givebit/sdk
 ```
 
 ### Requirements
@@ -43,7 +68,7 @@ yarn add givebit-sdk
 ### 1. Initialize GiveBit
 
 ```typescript
-import { GiveBit } from 'givebit-sdk';
+import { GiveBit } from '@givebit/sdk';
 
 // Initialize SDK (call once per app)
 const givebit = GiveBit.init({
@@ -84,14 +109,16 @@ givebit.on('donation_failed', (event) => {
 ### 3. Create a Donation Session
 
 ```typescript
-const session = await givebit.createDonationSession(
-  '0x1234...creator-wallet', // Creator's wallet
-  {
-    donorWallet: '0x5678...donor-wallet', // Optional
-    amount: '0.5', // ETH amount
-    memo: 'Great content!', // Optional message
-  }
-);
+const session = await givebit.createDonationSession({
+  creatorWallet: '0x1234...creator-wallet', // REQUIRED - where funds will be sent
+  amount: '0.5', // Donation amount
+  currency: 'ETH', // Currency (e.g., 'ETH', 'USDT')
+  network: 'holesky', // Network (e.g., 'holesky', 'ethereum', 'polygon')
+  donorWallet: '0x5678...donor-wallet', // Optional
+  metadata: { // Optional
+    memo: 'Great content!',
+  },
+});
 
 console.log('Session ID:', session.id);
 console.log('Status:', session.status);
@@ -99,9 +126,7 @@ console.log('Status:', session.status);
 
 ### 4. React Example
 
-```typescript
-import { useEffect, useState } from 'react';
-import { GiveBit } from 'givebit-sdk';
+```typescript@givebit/sdk';
 
 export function DonationWidget() {
   const [donations, setDonations] = useState([]);
@@ -131,6 +156,8 @@ export function DonationWidget() {
       {isConnecting && <p>Connecting...</p>}
       {donations.map((d) => (
         <div key={d.id} className="donation-item">
+          <p>{d.amount} ETH from {d.donor_wallet?.slice(0, 6)}...</p>
+          <p>{d.metadata?y={d.id} className="donation-item">
           <p>{d.amount} ETH from {d.donorWallet?.slice(0, 6)}...</p>
           <p>{d.memo}</p>
         </div>
@@ -153,8 +180,8 @@ Initialize the SDK singleton. Call once per application.
 ```typescript
 const givebit = GiveBit.init({
   projectId: 'proj_abc123',
-  apiKey: 'gb_test_...', // Get from your backend
-  mode: 'testnet', // 'testnet' | 'mainnet'
+  apiKey: 'gb_test_...', // Get from your backapi/ws', // Optional
+  apiEndpoint: 'https://testnet.zidanmutaqin.dev/api
   wsEndpoint: 'wss://testnet.zidanmutaqin.dev/ws', // Optional
   apiEndpoint: 'https://testnet.zidanmutaqin.dev', // Optional
   reconnectAttempts: 5, // Default
@@ -183,21 +210,24 @@ try {
 } catch (error) {
   console.log('WebSocket failed, using REST polling');
 }
-```
-
-##### `createDonationSession(creatorWallet, options?): Promise<DonationSession>`
+```options): Promise<DonationSession>`
 
 Create a new donation session for fundraising.
 
 ```typescript
-const session = await givebit.createDonationSession(
-  '0x1234...', // Creator wallet (required)
-  {
-    donorWallet: '0x5678...', // Optional: pre-fill donor address
-    amount: '1.0', // Optional: default donation amount in ETH
-    memo: 'Thanks for the stream!', // Optional: donation message
-  }
-);
+const session = await givebit.createDonationSession({
+  creatorWallet: '0x1234...', // REQUIRED: Creator wallet where funds will be sent
+  amount: '1.0', // REQUIRED: Donation amount
+  currency: 'ETH', // REQUIRED: Currency (e.g., 'ETH', 'USDT')
+  network: 'holesky', // REQUIRED: Network (e.g., 'holesky', 'ethereum', 'polygon')
+  donorWallet: '0x5678...', // Optional: pre-fill donor address
+  metadata: { // Optional: additional data
+    memo: 'Thanks for the stream!',
+    // ... other custom fields
+  },
+});
+
+// Returns: { id, project_id, creator_w
 
 // Returns: { id, projectId, creatorWallet, status, amount, ... }
 ```
@@ -283,27 +313,25 @@ givebit.disconnect();
 
 ```typescript
 interface GiveBitConfig {
-  projectId: string;
-  apiKey: string;
-  mode: 'testnet' | 'mainnet';
-  wsEndpoint?: string; // Custom WebSocket URL
-  apiEndpoint?: string; // Custom API URL
-  reconnectAttempts?: number;
-  reconnectDelay?: number;
+  projectId: string; // Default: 5
+  reconnectDelay?: number; // Default: 3000ms
 }
 
 interface DonationSession {
-  id: string;
-  projectId: string;
-  creatorWallet: string;
-  donorWallet?: string;
-  amount: string; // Wei or ETH depending on context
-  memo?: string;
+  id: string; // Session UUID
+  project_id: string; // Project ID
+  creator_wallet: string; // Wallet where funds will be sent
+  donor_wallet: string; // Donor's wallet
+  chain_id: number; // Blockchain chain ID (e.g., 17000 for Holesky)
+  contract_address: string; // Smart contract address
+  amount: string; // Donation amount
+  memo: string; // Optional memo
   status: 'pending' | 'confirmed' | 'finalized' | 'failed' | 'expired';
-  transactionHash?: string;
-  blockNumber?: number;
-  expiresAt: number; // Unix timestamp
-  createdAt: number; // Unix timestamp
+  created_at: string; // ISO timestamp
+  tx_hash: string; // Transaction hash
+  session_id_hash: string; // Session ID hash
+  requires_confirmation: boolean; // Whether confirmation is required
+  estimated_confirmation_time: number; // Estimated time in seconds
 }
 
 type EventType = 
@@ -312,6 +340,11 @@ type EventType =
   | 'donation_pending' 
   | 'donation_confirmed' 
   | 'donation_finalized' 
+  | 'donation_failed';
+
+interface DonationEvent {
+  type: EventType;
+  session?tion_finalized' 
   | 'donation_failed';
 
 interface DonationEvent {
@@ -343,8 +376,8 @@ VITE_GIVEBIT_MODE=mainnet
 ```
 
 ### Custom Endpoints
-
-If hosting GiveBit backend yourself:
+api/ws',
+  apiEndpoint: 'https://your-domain.com/api
 
 ```typescript
 GiveBit.init({
@@ -466,8 +499,8 @@ go run cmd/main.go
 ```bash
 cd indexer
 cargo run --release
-```
-
+```/api',
+  wsEndpoint: 'ws://localhost:8080/api
 3. Test in your app:
 ```typescript
 const givebit = GiveBit.init({
@@ -489,8 +522,8 @@ Free testnet tokens:
 
 ## Examples
 
-### Leaderboard
-
+### Leaderboard_wallet]) byDonor[d.donor_wallet] = 0;
+    byDonor[d.donor_w
 ```typescript
 async function updateLeaderboard() {
   const donations = await givebit.getDonationHistory(1000);
