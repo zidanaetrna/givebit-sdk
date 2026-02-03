@@ -14,8 +14,16 @@ export const CONFIG = {
   mainnet: {
     apiEndpoint: "https://mainnet.zidanmutaqin.dev/api",
     wsEndpoint: "wss://mainnet.zidanmutaqin.dev/api/ws",
-    chainId: 1, // Ethereum Mainnet
-    contractAddress: "0x", // Will be populated at runtime
+    chains: {
+      ethereum: {
+        chainId: 1, // Ethereum Mainnet
+        contractAddress: "0x", // TODO: Add Ethereum L1 contract after deployment
+      },
+      base: {
+        chainId: 8453, // Base Mainnet
+        contractAddress: "0x", // TODO: Add Base contract after deployment
+      },
+    },
   },
 };
 
@@ -23,7 +31,7 @@ export function getConfig(mode: GiveBitMode) {
   return CONFIG[mode];
 }
 
-export const SDK_VERSION = "1.0.3";
+export const SDK_VERSION = "1.0.5";
 export const RECONNECT_ATTEMPTS = 5;
 export const RECONNECT_DELAY = 3000; // 3 seconds
 export const WS_HEARTBEAT_INTERVAL = 30000; // 30 seconds
