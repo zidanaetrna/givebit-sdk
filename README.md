@@ -227,7 +227,9 @@ try {
 } catch (error) {
   console.log('WebSocket failed, using REST polling');
 }
-```options): Promise<DonationSession>`
+```
+
+##### `createDonationSession(options): Promise<DonationSession>`
 
 Create a new donation session for fundraising.
 
