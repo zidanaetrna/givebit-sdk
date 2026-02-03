@@ -78,7 +78,17 @@ curl -X POST https://testnet.zidanmutaqin.dev/api/setup \
   }'
 ```
 
-This will return your `projectId` and `apiKey`. **Save these securely** - you'll need them to initialize the SDK.
+**Example Response:**
+```json
+{
+  "projectId": "proj_1a2b3c4d5e6f7890",
+  "apiKey": "gb_test_abc123...",
+  "projectName": "YourStreamName",
+  "createdAt": "2026-02-03T10:30:00Z"
+}
+```
+
+**Save these securely!** You'll need both `projectId` and `apiKey` to initialize the SDK. The API key cannot be retrieved again.
 
 For mainnet, use `https://mainnet.zidanmutaqin.dev/api/setup`.
 
@@ -429,20 +439,30 @@ The overlay will:
 
 GiveBit works across multiple blockchains:
 
-| Network | testnet | mainnet |
-|---------|---------|---------|
-| Holesky (testnet) | ✅ | - |
-| Ethereum | ✅ | ✅ |
-| Base | ✅ | ✅ |
+| Network | Chain ID | Environment | Status |
+|---------|----------|-------------|--------|
+| Ethereum Holesky | 17000 | testnet | ✅ Active |
+| Ethereum Mainnet | 1 | mainnet | 🔄 Coming Soon |
+| Base Mainnet | 8453 | mainnet | 🔄 Coming Soon |
 
-Set mode in init:
+**Current Contract Addresses:**
+- **Holesky Testnet**: `0x5081968D6D4a1124D0B61C5E01F60dF928110ECE`
+- **Ethereum Mainnet**: TBD
+- **Base Mainnet**: TBD
+
+Set network when creating donations:
 
 ```typescript
 // Testnet: Uses Holesky
-GiveBit.init({ mode: 'testnet' });
+const session = await givebit.createDonationSession({
+  creatorWallet: '0x...',
+  amount: '0.1',
+  currency: 'ETH',
+  network: 'holesky', // Specify network
+});
 
-// Mainnet: Uses Ethereum + Base
-GiveBit.init({ mode: 'mainnet' });
+// Mainnet: Will support Ethereum + Base
+// Coming soon!
 ```
 
 ## Security
@@ -501,6 +521,47 @@ givebit.on('donation_finalized', handler); // Instant
 // REST Polling: 5-second delay
 // Automatically used if WebSocket unavailable
 ```
+
+## Backend Architecture
+
+### Authentication Flow
+
+All API requests require two headers:
+
+```typescript
+Authorization: Bearer gb_test_xxxxxxxxxxxxx  // Your API key
+X-Project-Id: proj_xxxxxxxxxxxxx            // Your project ID
+```
+
+The SDK automatically includes these headers in all requests.
+
+### WebSocket Connection
+
+WebSocket connections authenticate on upgrade:
+
+1. SDK sends `Authorization` and `X-Project-Id` headers
+2. Backend validates credentials and upgrades connection
+3. Backend sends `connection_open` event
+4. Backend broadcasts donation events to authenticated project
+
+### Donation Flow
+
+```
+1. SDK: createDonationSession() → Backend
+2. Backend: Creates session in DB + registers on blockchain
+3. Backend: Returns session with tx_hash and session_id_hash
+4. Blockchain: Emits DonationSessionCreated event
+5. Indexer: Detects event → sends webhook to Backend
+6. Backend: Updates session status → broadcasts via WebSocket
+7. SDK: Receives donation_finalized event
+```
+
+### API Key Security
+
+- **Format**: `gb_test_` (testnet) or `gb_live_` (mainnet) + 64 hex characters
+- **Storage**: SHA-256 hashed in database
+- **Rate Limiting**: 100 requests/minute per API key (configurable)
+- **Validation**: Backend checks format, hash, and project association
 
 ### Leaderboard
 
@@ -566,7 +627,7 @@ givebit.on('connection_lost', () => {
 ### Donation Not Appearing
 
 1. Check transaction on Etherscan:
-   - Testnet: https://holesky.etherscan.io/
+   - Testnet: https://eth-holesky.blockscout.com/
    - Mainnet: https://etherscan.io/
 
 2. Verify creator wallet is correct:
@@ -587,16 +648,83 @@ givebit.on('connection_lost', () => {
 - **`429 Too Many Requests`** - Rate limit exceeded
 
 Rate limits per API key:
-- REST API: 100 req/min
+- REST API: 100 req/min (configurable per project)
 - WebSocket: 10 req/sec
 - Webhooks: 50 req/min
 
+## Testing
+
+### Local Development Setup
+
+#### 1. Start the Backend
+
+```bash
+cd backend
+
+# Set environment variables
+export ADMIN_TOKEN="your-secure-admin-token"
+export PORT=8080
+export TESTNET_RPC_URL="https://ethereum-holesky.publicnode.com"
+export TESTNET_CONTRACT_ADDRESS="0x5081968D6D4a1124D0B61C5E01F60dF928110ECE"
+
+# Run the server
+go run cmd/main.go
+```
+
+#### 2. Create a Test Project
+
+```bash
+curl -X POST http://localhost:8080/api/setup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "projectName": "Test Project",
+    "creatorWallet": "0xYourWalletAddress"
+  }'
+```
+
+Save the returned `projectId` and `apiKey`.
+
+#### 3. Test in Your App
+
+```typescript
+const givebit = GiveBit.init({
+  projectId: 'proj_...', // From step 2
+  apiKey: 'gb_test_...', // From step 2
+  mode: 'testnet',
+  apiEndpoint: 'http://localhost:8080/api',
+  wsEndpoint: 'ws://localhost:8080/api/ws',
+});
+
+await givebit.connect();
+
+// Create a donation session
+const session = await givebit.createDonationSession({
+  creatorWallet: '0xYourWalletAddress',
+  amount: '0.01',
+  currency: 'ETH',
+  network: 'holesky',
+});
+
+console.log('Session created:', session);
+```
+
+### Testnet (Holesky)
+
+Free testnet tokens:
+- [Holesky Faucet](https://www.alchemy.com/faucets/ethereum-holesky)
+- [Infura Faucet](https://www.infura.io/faucet/holesky)
+
+Test your integration:
+```bash
+# Watch blockchain explorer for your transactions
+https://eth-holesky.blockscout.com/address/0x5081968D6D4a1124D0B61C5E01F60dF928110ECE
+```
+
 ## Documentation
 
-- [Main Documentation](../README.md)
-- [Backend API](../backend/README.md)
-- [Deployment Guide](../DEPLOYMENT.md)
-- [Smart Contract](../contracts/)
+- [GiveBit API Documentation](#api-reference) - SDK methods and types
+- [Smart Contracts](https://github.com/zidanaetrna/givebit-sdk/tree/main/contracts) - Solidity contracts
+- [Examples](#examples) - Usage examples and patterns
 
 ## Contributing
 
@@ -620,6 +748,7 @@ Apache License 2.0 - see [LICENSE](https://github.com/zidanaetrna/givebit-sdk/bl
 
 ## Roadmap
 
+- [ ] Mainnet (Q2 is the plan)
 - [ ] Native mobile SDKs (React Native, Flutter)
 - [ ] Payment page hosting
 - [ ] Advanced analytics dashboard
@@ -631,15 +760,12 @@ Apache License 2.0 - see [LICENSE](https://github.com/zidanaetrna/givebit-sdk/bl
 ## Acknowledgments
 
 Built with:
-- [WebSocket.js](https://github.com/theturtle32/WebSocket-Node)
-- [TypeScript](https://www.typescriptlang.org/)
-- [ethers.js](https://docs.ethers.org/)
+- [ws](https://github.com/websockets/ws) - WebSocket library for Node.js
+- [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
 
-## Related Projects
+Powered by:
+- Ethereum Holesky testnet for development
 
-- [GiveBit Backend](../backend/) - REST API & WebSocket server
-- [GiveBit Indexer](../indexer/) - Blockchain event listener
-- [GiveBit Contracts](../contracts/) - Smart contracts
 
 ---
 
